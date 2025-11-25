@@ -4,24 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bias‑Filtered Face Viewer</title>
-  <!--
-    This single HTML document includes all CSS and JavaScript inline so it can
-    be served without any external dependencies. It implements a client‑side
-    demonstration of skin tone normalisation. When a user uploads a photo,
-    their image is displayed alongside a processed version in which detected
-    skin regions are shifted towards a neutral mid‑brown tone while facial
-    features and shading are preserved.  The layout is responsive and
-    mobile‑friendly.
-  -->
   <style>
-/*
- * Basic styling for the bias‑filtered face viewer. The layout is kept simple
- * and responsive so it works well on both desktop and mobile. Colours and
- * typography are chosen for clarity and readability. You can further tweak
- * these styles or integrate a framework such as Tailwind or Bootstrap in a
- * future iteration if desired.
- */
-
+/* (same styling as before) */
 body {
   margin: 0;
   padding: 0;
@@ -30,100 +14,27 @@ body {
   background-color: #f9fafb;
   color: #333;
 }
-
 header {
   background-color: #2d2d2d;
   color: #ffffff;
   padding: 2rem 1rem;
   text-align: center;
 }
-
-header h1 {
-  margin: 0;
-  font-size: 2rem;
-}
-
-header p {
-  margin-top: 0.5rem;
-  font-size: 1rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-}
-
-.upload {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.upload input[type="file"] {
-  padding: 0.5rem;
-  font-size: 1rem;
-}
-
-.results {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-}
-
-.hidden {
-  display: none;
-}
-
-.image-container {
-  text-align: center;
-  flex: 1 1 45%;
-  margin: 1rem;
-}
-
-.image-container h2 {
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-}
-
-.image-container img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.info {
-  background-color: #ffffff;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.info h3 {
-  margin-top: 0;
-  font-size: 1.3rem;
-}
-
-.info ul {
-  list-style: disc inside;
-  padding-left: 0;
-}
-
-.info li {
-  margin-bottom: 0.5rem;
-}
-
-footer {
-  background-color: #2d2d2d;
-  color: #ffffff;
-  text-align: center;
-  padding: 1rem;
-  font-size: 0.9rem;
-}
+header h1 { margin: 0; font-size: 2rem; }
+header p { margin-top: 0.5rem; font-size: 1rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+main { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
+.upload { text-align: center; margin-bottom: 2rem; }
+.upload input[type="file"] { padding: 0.5rem; font-size: 1rem; }
+.results { display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 2rem; }
+.hidden { display: none; }
+.image-container { text-align: center; flex: 1 1 45%; margin: 1rem; }
+.image-container h2 { margin-bottom: 0.5rem; font-size: 1.2rem; }
+.image-container img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.info { background-color: #fff; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.info h3 { margin-top: 0; font-size: 1.3rem; }
+.info ul { list-style: disc inside; padding-left: 0; }
+.info li { margin-bottom: 0.5rem; }
+footer { background-color: #2d2d2d; color: #fff; text-align: center; padding: 1rem; font-size: 0.9rem; }
   </style>
 </head>
 <body>
@@ -149,24 +60,22 @@ footer {
       <h3>What we change and what we keep</h3>
       <ul>
         <li>We keep your facial features: bone structure, nose, lips, eyes, jawline and expression.</li>
-        <li>We normalise skin tone to a neutral mid‑brown colour to reduce colour‑related bias.</li>
+        <li>We normalise skin tone to a single dark brown colour to reduce colour‑related bias.</li>
         <li>This is an educational tool to help you understand bias, not a beauty filter.</li>
       </ul>
     </section>
   </main>
   <footer>
-    <p>&copy; 2025&nbsp;Unbiased&nbsp;Beauty. All rights reserved.</p>
+    <p>&copy; 2025 Unbiased Beauty. All rights reserved.</p>
   </footer>
   <script>
 /*
- * Client‑side image processing for the bias‑filtered face viewer. When the user
- * uploads an image, it displays both the original and a processed version in
- * which detected skin regions are shifted towards a neutral mid‑brown while
- * shading and facial structure are preserved.  The script uses a simple
- * YCbCr threshold to detect skin pixels and then operates in the CIELAB
- * colour space to adjust only the a and b channels of those pixels.
+ * Client‑side image processing. When the user uploads an image, it shows the
+ * original and a processed version. The processed version replaces every
+ * detected skin pixel with a fixed dark brown tone (#4f2421) so that the skin
+ * appears uniformly dark regardless of the original skin tone. Non‑skin pixels
+ * remain unchanged.
  */
-
 document.addEventListener('DOMContentLoaded', () => {
   const fileInput = document.getElementById('fileInput');
   const originalImage = document.getElementById('originalImage');
@@ -181,26 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.onload = e => {
       const dataURL = e.target.result;
       originalImage.src = dataURL;
-      // once loaded, perform processing
       processImage(dataURL).then(processedURL => {
         processedImage.src = processedURL;
         resultsSection.classList.remove('hidden');
-      }).catch(err => {
-        console.error('Error processing image:', err);
       });
     };
     reader.readAsDataURL(file);
   });
 
-  /**
-   * Process an image by detecting skin regions and shifting those pixels
-   * towards a neutral mid‑brown in the CIELAB colour space. Non‑skin pixels
-   * are left unchanged. This function returns a promise that resolves to a
-   * data URL representing the processed image.
-   *
-   * @param {string} dataURL A base64 encoded image data URL.
-   * @returns {Promise<string>} A promise resolving with the processed image.
-   */
   async function processImage(dataURL) {
     return new Promise(resolve => {
       const img = new Image();
@@ -213,55 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
 
-        // Helper functions for colour space conversions
-        function pivotRGBToLinear(v) {
-          return v > 0.04045 ? Math.pow((v + 0.055) / 1.055, 2.4) : v / 12.92;
-        }
-
-        function linearToSRGB(v) {
-          return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
-        }
-
-        function xyzToLab(x, y, z) {
-          // Normalize for D65 white point
-          x /= 0.95047;
-          y /= 1.00000;
-          z /= 1.08883;
-          const epsilon = 0.008856;
-          const kappa = 903.3;
-
-          function f(t) {
-            return t > epsilon ? Math.cbrt(t) : (kappa * t + 16) / 116;
-          }
-          const fx = f(x);
-          const fy = f(y);
-          const fz = f(z);
-          const L = 116 * fy - 16;
-          const a = 500 * (fx - fy);
-          const b = 200 * (fy - fz);
-          return { L, a, b };
-        }
-
-        function labToXyz(L, a, b) {
-          const fy = (L + 16) / 116;
-          const fx = fy + a / 500;
-          const fz = fy - b / 200;
-          const epsilon = 0.008856;
-          const kappa = 903.3;
-
-          function fInv(t) {
-            return t ** 3 > epsilon ? t ** 3 : (116 * t - 16) / kappa;
-          }
-          let xr = fInv(fx);
-          let yr = fInv(fy);
-          let zr = fInv(fz);
-          xr *= 0.95047;
-          yr *= 1.00000;
-          zr *= 1.08883;
-          return { x: xr, y: yr, z: zr };
-        }
-
-        // Helper to determine if a pixel is likely skin using YCbCr thresholds
+        // Simple YCbCr-based skin detector
         function isSkinPixel(r, g, b) {
           const Y = 0.299 * r + 0.587 * g + 0.114 * b;
           const Cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
@@ -269,73 +118,20 @@ document.addEventListener('DOMContentLoaded', () => {
           return (Cr >= 133 && Cr <= 173) && (Cb >= 77 && Cb <= 127);
         }
 
-        // First pass: compute average a and b over detected skin pixels
-        let sumA = 0;
-        let sumB = 0;
-        let skinCount = 0;
+        // Replace detected skin pixels with the target dark brown colour
         for (let i = 0; i < data.length; i += 4) {
           const r255 = data[i];
           const g255 = data[i + 1];
           const b255 = data[i + 2];
           if (isSkinPixel(r255, g255, b255)) {
-            const r = r255 / 255;
-            const g = g255 / 255;
-            const bVal = b255 / 255;
-            const R = pivotRGBToLinear(r);
-            const G = pivotRGBToLinear(g);
-            const B = pivotRGBToLinear(bVal);
-            const X = R * 0.4124 + G * 0.3576 + B * 0.1805;
-            const Yc = R * 0.2126 + G * 0.7152 + B * 0.0722;
-            const Z = R * 0.0193 + G * 0.1192 + B * 0.9505;
-            const lab = xyzToLab(X, Yc, Z);
-            sumA += lab.a;
-            sumB += lab.b;
-            skinCount++;
-          }
-        }
-        const avgA = skinCount > 0 ? sumA / skinCount : 0;
-        const avgB = skinCount > 0 ? sumB / skinCount : 0;
-
-        // Target mid‑brown in Lab space; tweak these values for different tones
-        const targetA = 20;
-        const targetBVal = 11;
-        const deltaA = targetA - avgA;
-        const deltaBVal = targetBVal - avgB;
-
-        // Second pass: adjust only skin pixels
-        for (let i = 0; i < data.length; i += 4) {
-          const r255 = data[i];
-          const g255 = data[i + 1];
-          const b255 = data[i + 2];
-          if (isSkinPixel(r255, g255, b255)) {
-            const r = r255 / 255;
-            const g = g255 / 255;
-            const bVal = b255 / 255;
-            const R = pivotRGBToLinear(r);
-            const G = pivotRGBToLinear(g);
-            const B = pivotRGBToLinear(bVal);
-            const X = R * 0.4124 + G * 0.3576 + B * 0.1805;
-            const Yc = R * 0.2126 + G * 0.7152 + B * 0.0722;
-            const Z = R * 0.0193 + G * 0.1192 + B * 0.9505;
-            const { L, a, b } = xyzToLab(X, Yc, Z);
-            const newA = a + deltaA;
-            const newB = b + deltaBVal;
-            const { x: Xn, y: Yn, z: Zn } = labToXyz(L, newA, newB);
-            let Rlin = Xn * 3.2406 + Yn * -1.5372 + Zn * -0.4986;
-            let Glin = Xn * -0.9689 + Yn * 1.8758 + Zn * 0.0415;
-            let Blin = Xn * 0.0557 + Yn * -0.2040 + Zn * 1.0570;
-            let Rout = linearToSRGB(Rlin);
-            let Gout = linearToSRGB(Glin);
-            let Bout = linearToSRGB(Blin);
-            data[i] = Math.min(255, Math.max(0, Math.round(Rout * 255)));
-            data[i + 1] = Math.min(255, Math.max(0, Math.round(Gout * 255)));
-            data[i + 2] = Math.min(255, Math.max(0, Math.round(Bout * 255)));
+            data[i]     = 0x4f; // R = 79
+            data[i + 1] = 0x24; // G = 36
+            data[i + 2] = 0x21; // B = 33
           }
         }
 
         ctx.putImageData(imageData, 0, 0);
-        const processedURL = canvas.toDataURL('image/png');
-        resolve(processedURL);
+        resolve(canvas.toDataURL('image/png'));
       };
       img.src = dataURL;
     });
